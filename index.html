@@ -30,16 +30,11 @@
       const rawUrl = 'https://raw.githubusercontent.com/badalbayli-rgb/yeni-app/main/bookmarklet.js';
       const link = document.getElementById('bookmark');
       const status = document.getElementById('status');
-      fetch(rawUrl + '?t=' + Date.now(), { cache: 'no-store', credentials: 'omit' })
-        .then(r => { if (!r.ok) throw Error('GitHub HTTP ' + r.status); return r.text(); })
-        .then(code => {
-          if (code.length < 10000 || !code.includes('__YENI_APP_FONET_GEBELIK_APANDISIT_TARAYICI__')) throw Error('Yer imi kaynağı doğrulanamadı.');
-          link.href = 'javascript:' + code;
-          link.textContent = 'Yeni App';
-          status.className = 'note';
-          status.textContent = 'Düğme hazır. Yer imleri çubuğunuza sürükleyin.';
-        })
-        .catch(error => { status.textContent = 'Yer imi hazırlanamadı: ' + error.message; });
+      const loader = `(async()=>{try{const u=${JSON.stringify(rawUrl)};const r=await fetch(u+'?t='+Date.now(),{cache:'no-store',credentials:'omit'});const c=await r.text();if(!r.ok||c.length<10000||!c.includes('__YENI_APP_FONET_GEBELIK_APANDISIT_TARAYICI__'))throw Error('Kaynak doğrulanamadı');(0,eval)(c+'\\n//# sourceURL=yeni-app-github.js')}catch(e){alert('Yeni App yüklenemedi: '+(e&&e.message?e.message:e))}})()`;
+      link.href = 'javascript:' + loader;
+      link.textContent = 'Yeni App';
+      status.className = 'note';
+      status.textContent = 'Düğme hazır. Yer imleri çubuğunuza sürükleyin. Bu yer imi her çalıştırmada güncel sürümü alır.';
     })();
   </script>
 </body>
