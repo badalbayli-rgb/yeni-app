@@ -1,2 +1,3 @@
-# yeni-app
-FONET gebelikte apandisit hasta tarayıcı ve sürükle-bırak bookmark sayfası
+# Yeni App
+
+GitHub Pages için statik yer imi sayfası. `bookmarklet.js` FONET'te çalışacak hasta tarayıcısıdır; `index.html` kullanıcıya sürükle-bırak yer imi sunar.

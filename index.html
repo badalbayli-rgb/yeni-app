@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Yeni App — FONET Hasta Tarayıcı</title>
+  <style>
+    :root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;background:#0f172a;color:#f8fafc;font:16px/1.55 Arial,sans-serif}.card{width:min(780px,100%);padding:34px;border:1px solid #334155;border-radius:18px;background:#111827;box-shadow:0 22px 60px #0007}h1{margin:0 0 10px;font-size:30px}p{color:#cbd5e1}.bookmark{display:inline-block;margin:14px 0;padding:15px 20px;border-radius:12px;background:#2563eb;color:#fff;text-decoration:none;font-size:19px;font-weight:900;box-shadow:0 10px 28px #2563eb55;cursor:grab}.bookmark:active{cursor:grabbing}.steps{margin-top:18px;padding:18px;border-radius:12px;background:#1e293b;color:#e2e8f0}.note{margin-top:15px;padding:12px 14px;border-left:4px solid #22c55e;border-radius:8px;background:#052e16;color:#bbf7d0;font-size:14px}.warn{margin-top:15px;padding:12px 14px;border-left:4px solid #f59e0b;border-radius:8px;background:#422006;color:#fde68a;font-size:14px}code{background:#020617;border:1px solid #334155;border-radius:6px;padding:2px 6px}
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>Yeni App</h1>
+    <p>Gebelikte apandisit araştırması için FONET hasta tarayıcısı.</p>
+    <a id="bookmark" class="bookmark" href="#" draggable="true">Yeni App yükleniyor…</a>
+    <div class="steps">
+      <b>Kullanım</b>
+      <ol>
+        <li>Bu düğmeyi yer imleri çubuğunuza sürükleyin.</li>
+        <li>FONET’te Ameliyat sorgu listesini açın.</li>
+        <li>Yer imleri çubuğundaki <b>Yeni App</b> düğmesine basın.</li>
+        <li>Excel dosyasını seçin veya açık listeyi okuyun; ardından taramayı başlatın.</li>
+      </ol>
+    </div>
+    <div class="note">Araç yalnızca açık FONET oturumunuzdan okur. Hasta verileri GitHub’a gönderilmez ve FONET’te kayıt oluşturulmaz/değiştirilmez.</div>
+    <div id="status" class="warn">Yer imi kodu hazırlanıyor…</div>
+  </main>
+  <script>
+    (() => {
+      const rawUrl = 'https://raw.githubusercontent.com/badalbayli-rgb/yeni-app/main/bookmarklet.js';
+      const link = document.getElementById('bookmark');
+      const status = document.getElementById('status');
+      fetch(rawUrl + '?t=' + Date.now(), { cache: 'no-store', credentials: 'omit' })
+        .then(r => { if (!r.ok) throw Error('GitHub HTTP ' + r.status); return r.text(); })
+        .then(code => {
+          if (code.length < 10000 || !code.includes('__YENI_APP_FONET_GEBELIK_APANDISIT_TARAYICI__')) throw Error('Yer imi kaynağı doğrulanamadı.');
+          link.href = 'javascript:' + code;
+          link.textContent = 'Yeni App';
+          status.className = 'note';
+          status.textContent = 'Düğme hazır. Yer imleri çubuğunuza sürükleyin.';
+        })
+        .catch(error => { status.textContent = 'Yer imi hazırlanamadı: ' + error.message; });
+    })();
+  </script>
+</body>
+</html>
