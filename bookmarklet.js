@@ -1,5 +1,5 @@
 /*
- Yeni App — FONET Gebelikte Apandisit Hasta Tarayıcı v1.0.3
+ Yeni App — FONET Gebelikte Apandisit Hasta Tarayıcı v1.0.4
  Yalnızca okur: FONET'e kayıt eklemez/değiştirmez.
 */
 (() => {
@@ -20,7 +20,7 @@
 
   const panel=document.createElement('section'); panel.id='fga-panel';
   panel.innerHTML=`<style>#fga-panel{position:fixed;inset:14px;z-index:2147483647;background:#f8fafc;color:#102a43;border:1px solid #829ab1;border-radius:13px;box-shadow:0 18px 60px #0008;padding:14px;display:flex;flex-direction:column;gap:9px;font:13px Arial,sans-serif}#fga-panel *{box-sizing:border-box}#fga-panel header{display:flex;justify-content:space-between;align-items:center;background:#0f4c81;color:#fff;margin:-14px -14px 0;padding:13px 15px;border-radius:12px 12px 0 0}#fga-panel button{border:0;border-radius:6px;padding:8px 11px;background:#0878bd;color:#fff;font-weight:700;cursor:pointer;margin-right:5px}#fga-panel button:disabled{opacity:.45;cursor:not-allowed}#fga-stop{background:#b42318!important}#fga-pause,#fga-csv,#fga-close{background:#52606d!important}#fga-status{white-space:pre-wrap;min-height:36px}#fga-bar-wrap{height:9px;background:#d9e2ec;border-radius:8px;overflow:hidden}#fga-bar{height:100%;width:0;background:#16a34a}#fga-table{overflow:auto;flex:1;background:#fff;border:1px solid #bcccdc;border-radius:7px}#fga-table table{border-collapse:collapse;width:max-content;min-width:100%}#fga-table th,#fga-table td{padding:7px;vertical-align:top;text-align:left;border-bottom:1px solid #e5e7eb;max-width:260px;white-space:pre-wrap}#fga-table th{position:sticky;top:0;background:#d9eaf7}</style><header><b>Yeni App — Gebelikte Apandisit Hasta Tarayıcı v1.0.2</b><button id="fga-close">Kapat</button></header><div><input id="fga-file" type="file" accept=".xlsx,.xls,.csv"><button id="fga-excel">Excel'i Oku</button><button id="fga-open">Açık Listeyi Oku</button><button id="fga-start" disabled>Taramayı Başlat</button><button id="fga-pause" disabled>Duraklat</button><button id="fga-stop" disabled>Durdur</button><button id="fga-csv" disabled>CSV indir</button></div><div id="fga-status">Excel yükleyin veya FONET'teki ameliyat sorgu listesini açık bırakıp “Açık Listeyi Oku” seçin. Yalnızca açık ve laparoskopik appendektomi ameliyatları işlenir.</div><div id="fga-bar-wrap"><div id="fga-bar"></div></div><div id="fga-table"><table><thead><tr>${headers.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody id="fga-body"></tbody></table></div>`;
-  document.documentElement.append(panel);panel.querySelector('header b').textContent='Yeni App — Gebelikte Apandisit Hasta Tarayıcı v1.0.3';
+  document.documentElement.append(panel);panel.querySelector('header b').textContent='Yeni App — Gebelikte Apandisit Hasta Tarayıcı v1.0.4';
   const $=s=>panel.querySelector(s), status=t=>{$('#fga-status').textContent=t??`İşlenen: ${state.done}/${state.patients.length} | Hata: ${state.errors}`;$('#fga-bar').style.width=state.patients.length?`${100*state.done/state.patients.length}%`:'0%';};
   const log=t=>status(`${now()}  ${t}`);
   const render=()=>{$('#fga-body').innerHTML=state.results.map(row=>`<tr>${headers.map(h=>`<td>${escapeHtml(row[h]??'')}</td>`).join('')}</tr>`).join('');};
@@ -67,13 +67,12 @@
     if(p.gelisId&&p.birimSevkId)return p;
     if(!/^\d{11}$/.test(norm(p.tc)))throw Error('Geçerli 11 haneli TC bulunamadı');
     const controls=searchControls();if(!controls)throw Error('FONET Ameliyat arama ekranındaki Kimlik No/Sorgula alanları bulunamadı');
-    if(!norm(controls.unitInput?.value))throw Error('Ameliyathane seçili değil. FONET ekranında Ameliyathane olarak Genel Ameliyathane seçin');
     const before=openOperations().map(x=>operation(x.raw)).map(x=>`${x.operationNo}|${x.gelisId}`).join(';');
     setFonetField(controls.doc,controls.tcInput,'');setFonetField(controls.doc,controls.byLabel('İşlem No'),'');setFonetField(controls.doc,controls.byLabel('Adı'),'');setFonetField(controls.doc,controls.byLabel('Soyadı'),'');
     clearOptionalCombo(controls.doc,controls.byLabel('Doktor'));
     setFonetField(controls.doc,controls.byLabel('İlk Tarih'),new Date(2000,0,1));setFonetField(controls.doc,controls.byLabel('Son Tarih'),new Date());setFonetField(controls.doc,controls.tcInput,p.tc);triggerExtButton(controls.doc,controls.query);
-    const found=await waitFor(()=>{const list=openOperations().map((x,i)=>operation(x.raw,i));const signature=list.map(x=>`${x.operationNo}|${x.gelisId}`).join(';');return list.length&&(signature!==before||list.some(x=>x.operationNo===p.operationNo))?list:null;},20000);
-    if(!found?.length)throw Error('TC için FONET ameliyat kaydı bulunamadı; ameliyathane/birim seçimi ile tarih kriterini kontrol edin');
+    const found=await waitFor(()=>{const list=openOperations().map((x,i)=>operation(x.raw,i));const signature=list.map(x=>`${x.operationNo}|${x.gelisId}`).join(';');return list.length&&(signature!==before||list.some(x=>x.operationNo===p.operationNo))?list:null;},8000);
+    if(!found?.length)throw Error('FONET sorgu sonucu: Kayıt Yok (01.01.2000–bugün)');
     const appendectomies=found.filter(isAppendectomy);
     if(!appendectomies.length)throw Error('Bu TC için açık veya laparoskopik appendektomi ameliyatı bulunamadı');
     const selected=(p.operationNo&&appendectomies.find(x=>x.operationNo===p.operationNo))||nearestOperation(appendectomies,p.date);
